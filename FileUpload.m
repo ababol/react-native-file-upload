@@ -84,9 +84,14 @@ RCT_EXPORT_METHOD(upload:(NSDictionary *)obj callback:(RCTResponseSenderBlock)ca
       [library assetForURL:assetUrl resultBlock:^(ALAsset *asset) {
         ALAssetRepresentation *rep = [asset defaultRepresentation];
 
-        CGImageRef fullScreenImageRef = [rep fullScreenImage];
-        UIImage *image = [UIImage imageWithCGImage:fullScreenImageRef];
-        tempData = UIImagePNGRepresentation(image);
+        long long size = rep.size;
+        NSMutableData *rawData = [[NSMutableData alloc] initWithCapacity:size];
+        void *buffer = [rawData mutableBytes];
+        [rep getBytes:buffer fromOffset:0 length:size error:nil];
+        tempData = [[NSData alloc] initWithBytes:buffer length:size];
+        [tempData writeToFile:filepath atomically:YES];
+
+
         isFinished = YES;
       } failureBlock:^(NSError *error) {
         NSLog(@"ALAssetsLibrary assetForURL error:%@", error);
@@ -95,6 +100,7 @@ RCT_EXPORT_METHOD(upload:(NSDictionary *)obj callback:(RCTResponseSenderBlock)ca
       while (!isFinished) {
           [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.01f]];
       }
+
       fileData = tempData;
     } else if ([filepath hasPrefix:@"data:"] || [filepath hasPrefix:@"file:"]) {
       NSURL *fileUrl = [[NSURL alloc] initWithString:filepath];
