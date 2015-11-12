@@ -18,7 +18,7 @@
     "upload"
   ],
   "peerDependencies": {
-    "react-native": ">=0.4.2"
+    "react-native": ">=0.4.2 || 0.15.0-rc"
   },
   "author": "Liucw",
   "license": "MIT",
